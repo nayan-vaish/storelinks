@@ -54,6 +54,7 @@ def manageSharedLinks(request, status, id = None):
         if form.is_valid():
             sharedLink = form.save(commit=False)
             sharedLink.status = status
+            sharedLink.user_name = request.user.username
             sharedLink.save()
             return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status}))
     else:
