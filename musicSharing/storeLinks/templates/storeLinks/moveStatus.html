@@ -1,0 +1,5 @@
+{% if status == 1 %}
+  <a class="btn btn-info btn-sm" href="{% url 'changeStatusofLink' status 2 record.id %}">Move To Done</a>
+{% else %}
+  <a class="btn btn-info btn-sm" href="{% url 'changeStatusofLink' status 1 record.id %}">Move To Listen</a>
+{% endif %}

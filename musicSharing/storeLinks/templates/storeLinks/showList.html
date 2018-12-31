@@ -1,0 +1,53 @@
+{% load render_table from django_tables2 %}
+{% load bootstrap3 %}
+<!doctype html>
+<html>
+    <head>
+        <title>List of shared links</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    </head>
+    <br/>
+    <br/>
+    {% if status == 1 %}
+    <center style="color:#007bff">
+      <h4>
+      Music Shared With You
+      </h4>
+    </center>
+    {% else %}
+    <center style="color:#007bff">
+      <h4>
+      Music You Have Heard
+      </h4>
+    </center>
+    {% endif %}
+    <br/>
+    <br/>
+    <form action="" method="get" class="form form-inline">
+        {% bootstrap_form filter.form layout='inline' %}
+        {% bootstrap_button 'Search' %}
+    </form>
+    <br/>
+    <br/>
+
+    <body>
+        {% render_table table %}
+    </body>
+    <br/>
+    <br/>
+    <div>
+      <center>
+          <div>
+          <a class="btn btn-info btn-sm" href="{%url 'manageSharedLinks' status%}">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add New Link
+          </a>
+          </div>
+          {% if status == 1 %}
+              <a href="/storeLinks/2">GoTo Done</a>
+          {% else %}
+              <a href="/storeLinks/1">GoTo Listen</a>
+          {% endif %}
+      </center>
+    </div>
+</html>
