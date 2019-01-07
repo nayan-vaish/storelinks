@@ -21,12 +21,13 @@ class SharedMusicLink(models.Model):
         (TO_LISTEN, 'To_Listen'),
         (DONE, 'Done')
     )
-    user_name = models.CharField(max_length=100, default="NayanVaish")
+    user_name = models.CharField(db_index=True, max_length=100)
     link_name = models.CharField(max_length=100)
     link = models.CharField(max_length=400)
-    artist_name = models.CharField(max_length=100)
-    link_source = models.CharField(max_length=100)
-    link_type = models.CharField(max_length=5,
+    artist_name = models.CharField(db_index=True, max_length=100)
+    link_source = models.CharField(db_index=True, max_length=100)
+    link_type = models.CharField(db_index=True,
+                                 max_length=5,
                                  choices=LINK_TYPE_CHOICES,
                                  default=TRACK)
     shared_by = models.CharField(max_length=100)

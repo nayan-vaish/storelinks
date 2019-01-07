@@ -6,8 +6,7 @@
         <title>List of shared links</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     </head>
-    <br/>
-    <br/>
+    <div>
     {% if status == 1 %}
     <center style="color:#007bff">
       <h4>
@@ -21,20 +20,27 @@
       </h4>
     </center>
     {% endif %}
-    <br/>
-    <br/>
-    <form action="" method="get" class="form form-inline">
+    </div>
+
+    <div align=right>
+    <a class="btn btn-sm" href="{%url 'logout' %}" style="position:fixed;right: 0;top: 0;">
+      <span class="glyphicon glyphicon-off"></span>
+      Logout
+    </a>
+    </div>
+
+    <div style="margin-top:30px;margin-bottom:30px">
+      <form action="" method="get" class="form form-inline">
         {% bootstrap_form filter.form layout='inline' %}
         {% bootstrap_button 'Search' %}
-    </form>
-    <br/>
-    <br/>
-
+      </form>
+    </div>
+    <div style="margin-top:30px;margin-bottom:30px">
     <body>
         {% render_table table %}
     </body>
-    <br/>
-    <br/>
+    </div>
+
     <div>
       <center>
           <div>

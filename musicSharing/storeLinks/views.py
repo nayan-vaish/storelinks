@@ -6,6 +6,8 @@ from .models import SharedMusicLink
 from .tables import SharedLinksTable
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.db.utils import DatabaseError
+from django.contrib.auth import logout as auth_logout
 import django_filters
 
 
@@ -19,6 +21,12 @@ class SharedLinkFilter(django_filters.FilterSet):
         fields = ['artist_name', 'link_source', 'shared_by', 'link_type']
 
 
+def logout(request):
+    """Logs out user"""
+    auth_logout(request)
+    return HttpResponseRedirect(reverse('login', args=()))
+
+
 def login(request):
     return render(request, 'storeLinks/login.html')
 
@@ -26,26 +34,36 @@ def login(request):
 def showList(request, status=1):
     if request.user.is_authenticated:
         username = request.user.username
+        print(username)
         latest_stored_links = SharedMusicLink.objects.filter(status=status,user_name=username).order_by('-shared_date')
         filter = SharedLinkFilter(request.GET, queryset=latest_stored_links)
         table = SharedLinksTable(filter.qs)
         RequestConfig(request).configure(table)
         context = {'table': table, 'status': status, 'filter': filter}
         return render(request, 'storeLinks/showList.html', context)
+    else:
+        return HttpResponseRedirect(reverse('login', args=()))
 
 
 def deleteLink(request, status, id):
-    SharedMusicLink.objects.filter(id=id).delete()
-    return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status}))
+    if request.user.is_authenticated:
+        SharedMusicLink.objects.filter(id=id).delete()
+        return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status}))
+    else:
+        return HttpResponseRedirect(reverse('login', args=()))
 
 
 def changeStatusofLink(request, current_status, to_status, id):
-    SharedMusicLink.objects.filter(id=id).update(status=to_status)
-    return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': current_status}))
+    if request.user.is_authenticated:
+        SharedMusicLink.objects.filter(id=id).update(status=to_status)
+        return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': current_status}))
+    else:
+        return HttpResponseRedirect(reverse('login', args=()))
 
 
-
-def manageSharedLinks(request, status, id = None):
+def manageSharedLinks(request, status, id=None):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('login', args=()))
     musicLink = None
     if id != None:
         musicLink = SharedMusicLink.objects.get(pk=id)
@@ -55,7 +73,10 @@ def manageSharedLinks(request, status, id = None):
             sharedLink = form.save(commit=False)
             sharedLink.status = status
             sharedLink.user_name = request.user.username
-            sharedLink.save()
+            try:
+                sharedLink.save()
+            except DatabaseError as e:
+                raise form.ValidationError(e)
             return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status}))
     else:
         form = SharedMusicLinkForm(instance=musicLink)
