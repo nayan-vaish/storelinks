@@ -86,6 +86,17 @@ SOCIAL_AUTH_FACEBOOK_KEY = '279758499400409'
 SOCIAL_AUTH_FACEBOOK_SECRET = '4d96ddcacf649c5fc7f89af8fd8926dd'
 LOGIN_REDIRECT_URL = 'showList'
 
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_link', 'user_friends']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+      'fields': 'id, name, email, picture.type(large), link, friends'
+}
+SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [
+        ('name', 'name'),
+        ('email', 'email'),
+        ('picture', 'picture'),
+        ('link', 'profile_url'),
+]
+
 WSGI_APPLICATION = 'musicSharing.wsgi.application'
 
 
