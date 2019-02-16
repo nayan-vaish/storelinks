@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.db.utils import DatabaseError
 from django.contrib.auth import logout as auth_logout
+import urllib.request
+import json
 import django_filters
 
 
@@ -33,9 +35,10 @@ def login(request):
 
 def showList(request, status=1):
     if request.user.is_authenticated:
-        username = request.user.username
-        print(username)
-        latest_stored_links = SharedMusicLink.objects.filter(status=status,user_name=username).order_by('-shared_date')
+        social_user = request.user.social_auth.get(provider='facebook')
+        userid = social_user.uid
+
+        latest_stored_links = SharedMusicLink.objects.filter(status=status,user_id=userid).order_by('-shared_date')
         filter = SharedLinkFilter(request.GET, queryset=latest_stored_links)
         table = SharedLinksTable(filter.qs)
         RequestConfig(request).configure(table)
@@ -72,7 +75,7 @@ def manageSharedLinks(request, status, id=None):
         if form.is_valid():
             sharedLink = form.save(commit=False)
             sharedLink.status = status
-            sharedLink.user_name = request.user.username
+            sharedLink.user_id = request.user.social_auth.get(provider='facebook').uid
             try:
                 sharedLink.save()
             except DatabaseError as e:

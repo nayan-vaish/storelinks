@@ -21,7 +21,7 @@ class SharedMusicLink(models.Model):
         (TO_LISTEN, 'To_Listen'),
         (DONE, 'Done')
     )
-    user_name = models.CharField(db_index=True, max_length=100)
+    user_id = models.CharField(db_index=True, max_length=300)
     link_name = models.CharField(max_length=100)
     link = models.URLField(max_length=400)
     artist_name = models.CharField(db_index=True, max_length=100)
