@@ -23,7 +23,7 @@ class SharedMusicLink(models.Model):
     )
     user_name = models.CharField(db_index=True, max_length=100)
     link_name = models.CharField(max_length=100)
-    link = models.CharField(max_length=400)
+    link = models.URLField(max_length=400)
     artist_name = models.CharField(db_index=True, max_length=100)
     link_source = models.CharField(db_index=True, max_length=100)
     link_type = models.CharField(db_index=True,
