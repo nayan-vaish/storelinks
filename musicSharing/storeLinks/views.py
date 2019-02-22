@@ -2,12 +2,14 @@ from django.shortcuts import render
 from django_tables2 import RequestConfig
 from .forms import SharedMusicLinkForm
 
-from .models import SharedMusicLink
+from .models import SharedMusicLink, User, UserInfo, Friends
 from .tables import SharedLinksTable
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.db.utils import DatabaseError
 from django.contrib.auth import logout as auth_logout
+from urllib.request import urlopen
+import json
 import django_filters
 
 PROVIDER = 'facebook'
@@ -37,6 +39,28 @@ def showList(request, status=1):
     if request.user.is_authenticated:
         social_user = request.user.social_auth.get(provider=PROVIDER)
         userid = social_user.uid
+        name = social_user.extra_data['name']
+        first_name = social_user.extra_data['first_name']
+        last_name = social_user.extra_data['last_name']
+        email = social_user.extra_data['email']
+
+        #storing user information
+        user, created = User.objects.update_or_create(user_id=userid)
+        userInfo, created = UserInfo.objects.update_or_create(
+            user=user,
+            defaults={'name': name, 'first_name': first_name, 'last_name': last_name, 'email': email}
+        )
+
+        url = u'https://graph.facebook.com/{0}/' \
+              u'friends?fields=id,name' \
+              u'&access_token={1}'.format(userid, social_user.extra_data['access_token'])
+
+        friends = json.loads(urlopen(url).read()).get('data')
+        for friend in friends:
+            friend_id = friend['id']
+            friend_user, created = User.objects.update_or_create(user_id=friend_id)
+            userFriend, created = Friends.objects.get_or_create(user=user)
+            userFriend.friends_id.add(friend_user)
 
         latest_stored_links = SharedMusicLink.objects.filter(status=status,user_id=userid).order_by('-shared_date')
         filter = SharedLinkFilter(request.GET, queryset=latest_stored_links)
