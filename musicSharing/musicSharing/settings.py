@@ -88,12 +88,13 @@ LOGIN_REDIRECT_URL = 'showList'
 
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_link', 'user_friends']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-      'fields': 'id, name, email, picture.type(large), link, friends'
+      'fields': 'id, name, email, link, friends'
 }
 SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [
         ('name', 'name'),
+        ('first_name', 'first_name'),
+        ('last_name', 'last_name'),
         ('email', 'email'),
-        ('picture', 'picture'),
         ('link', 'profile_url'),
 ]
 
