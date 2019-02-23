@@ -27,9 +27,10 @@ class SharedLinksTable(tables.Table):
 
     class Meta:
         model = SharedMusicLink
-        fields = ('link_name', 'artist_name', 'link_type', 'link_source', 'shared_by', 'shared_date', 'edit', 'delete', 'move')
+        fields = ('link_name', 'artist_name', 'link_type', 'link_source', 'shared_by', 'shared_date', 'edit', 'delete', 'share', 'move')
         template_name = 'django_tables2/bootstrap4.html'
 
     move = TemplateColumn(template_name='storeLinks/moveStatus.html', orderable=False)
     edit = TemplateColumn(template_name='storeLinks/editButton.html', orderable=False)
+    share = TemplateColumn(template_name='storeLinks/shareButton.html', orderable=False)
     delete = TemplateColumn(template_name='storeLinks/deleteButton.html', orderable=False)

@@ -35,6 +35,33 @@ def login(request):
     return render(request, 'storeLinks/login.html')
 
 
+def shareLink(request, status, id):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('login', args=()))
+    else:
+        social_user = request.user.social_auth.get(provider=PROVIDER)
+        userid = social_user.uid
+        user = User.objects.get(user_id=userid)
+        musicLink = SharedMusicLink.objects.get(pk=id)
+        print(musicLink)
+        if user:
+            friends = Friends.objects.get(user=user)
+            print(friends)
+            userInfo = UserInfo.objects.get(user=user)
+            for friend in friends.friends_id.all():
+                print("sharing with = " + str(friend.user_id) + "link = " + str(SharedMusicLink.link))
+                sharedLink, created = SharedMusicLink.objects.get_or_create(
+                    user_id=friend.user_id, link=musicLink.link,
+                    defaults={'link_name': musicLink.link_name, 'artist_name': musicLink.artist_name, 'link_source': musicLink.link_source, 'link_type': musicLink.link_type, 'shared_by': userInfo.name}
+                )
+                print("printing shared link" + sharedLink.link_name + " " + str(sharedLink.user_id) + " " + sharedLink.link)
+                if not created:
+                    print("link already shared")
+        else:
+            print("user not found")
+        return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status}))
+
+
 def showList(request, status=1):
     if request.user.is_authenticated:
         social_user = request.user.social_auth.get(provider=PROVIDER)
@@ -43,6 +70,7 @@ def showList(request, status=1):
         first_name = social_user.extra_data['first_name']
         last_name = social_user.extra_data['last_name']
         email = social_user.extra_data['email']
+        print(userid)
 
         #storing user information
         user, created = User.objects.update_or_create(user_id=userid)
