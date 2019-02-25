@@ -16,13 +16,14 @@ PROVIDER = 'facebook'
 
 
 class SharedLinkFilter(django_filters.FilterSet):
-    link_source = django_filters.CharFilter(lookup_expr='iexact')
-    shared_by = django_filters.CharFilter(lookup_expr='iexact')
-    artist_name = django_filters.CharFilter(lookup_expr='iexact')
+    link_name = django_filters.CharFilter(lookup_expr='icontains')
+    link_source = django_filters.CharFilter(lookup_expr='istartswith')
+    shared_by = django_filters.CharFilter(lookup_expr='istartswith')
+    artist_name = django_filters.CharFilter(lookup_expr='istartswith')
 
     class Meta:
         model = SharedMusicLink
-        fields = ['artist_name', 'link_source', 'shared_by', 'link_type']
+        fields = ['link_name', 'artist_name', 'link_source', 'shared_by', 'link_type']
 
 
 def logout(request):
@@ -42,14 +43,16 @@ def shareLink(request, status, id):
         social_user = request.user.social_auth.get(provider=PROVIDER)
         userid = social_user.uid
         user = User.objects.get(user_id=userid)
+        ## do seccurity check
         musicLink = SharedMusicLink.objects.get(pk=id)
         print(musicLink)
         if user:
             friends = Friends.objects.get(user=user)
             print(friends)
             userInfo = UserInfo.objects.get(user=user)
+
             for friend in friends.friends_id.all():
-                print("sharing with = " + str(friend.user_id) + "link = " + str(SharedMusicLink.link))
+                print("sharing with = " + str(friend.user_id) + "link = " + str(musicLink.link))
                 sharedLink, created = SharedMusicLink.objects.get_or_create(
                     user_id=friend.user_id, link=musicLink.link,
                     defaults={'link_name': musicLink.link_name, 'artist_name': musicLink.artist_name, 'link_source': musicLink.link_source, 'link_type': musicLink.link_type, 'shared_by': userInfo.name}
@@ -59,10 +62,10 @@ def shareLink(request, status, id):
                     print("link already shared")
         else:
             print("user not found")
-        return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status}))
+        return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status, 'shared': str(musicLink.link_name)}))
 
 
-def showList(request, status=1):
+def showList(request, status=1, shared=''):
     if request.user.is_authenticated:
         social_user = request.user.social_auth.get(provider=PROVIDER)
         userid = social_user.uid
@@ -94,7 +97,10 @@ def showList(request, status=1):
         filter = SharedLinkFilter(request.GET, queryset=latest_stored_links)
         table = SharedLinksTable(filter.qs)
         RequestConfig(request).configure(table)
-        context = {'table': table, 'status': status, 'filter': filter}
+        if shared:
+            # 75 is max length of link name to be displayed when shared
+            shared = shared[:75] + (shared[75:] and '...')
+        context = {'table': table, 'status': status, 'filter': filter, 'shared': shared.title()}
         return render(request, 'storeLinks/showList.html', context)
     else:
         return HttpResponseRedirect(reverse('login', args=()))

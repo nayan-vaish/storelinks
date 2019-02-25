@@ -7,6 +7,7 @@ urlpatterns = [
     # ex: /storeLinks/5/
     path('', views.showList, name='showList'),
     path('<int:status>/', views.showList, name='showList'),
+    path('<int:status>/<str:shared>', views.showList, name='showList'),
     path('manageSharedLink/<int:status>/', views.manageSharedLinks, name='manageSharedLinks'),
     path('manageSharedLink/<int:status>/<int:id>/', views.manageSharedLinks, name='manageSharedLinks'),
     path('deleteLink/<int:status>/<int:id>', views.deleteLink, name='deleteLink'),

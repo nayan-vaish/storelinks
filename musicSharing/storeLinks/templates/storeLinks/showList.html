@@ -8,19 +8,28 @@
     </head>
     <div>
     {% if status == 1 %}
-    <center style="color:#007bff">
+    <center style="color:#70C9F5">
       <h4>
-      Music Shared With You
+      Music Shared With {{ user.get_full_name }}!
       </h4>
     </center>
     {% else %}
-    <center style="color:#007bff">
+    <center style="color:#70C9F5">
       <h4>
-      Music You Have Heard
+      Music Heard By {{ user.get_full_name }}!
       </h4>
     </center>
     {% endif %}
     </div>
+    {% if shared %}
+    <div>
+      <center style="color:#70C9F5">
+        <h5>
+        <span style="color:#99BFF3">{{shared}}</span> has been shared with your Facebook Friends who have MusicShare installed.
+      </h5>
+      </center>
+    </div>
+    {% endif %}
 
     <div align=right>
     <a class="btn btn-sm" href="{%url 'logout' %}" style="position:fixed;right: 0;top: 0;">
