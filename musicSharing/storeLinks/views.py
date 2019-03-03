@@ -10,6 +10,7 @@ from django.db.utils import DatabaseError
 from django.contrib.auth import logout as auth_logout
 from urllib.request import urlopen
 import json
+from django.core.mail import EmailMultiAlternatives
 import django_filters
 
 PROVIDER = 'facebook'
@@ -36,6 +37,25 @@ def login(request):
     return render(request, 'storeLinks/login.html')
 
 
+def createSubject(senderName, linkName):
+    subject = senderName + " shared " + linkName + " via MusicShare."
+    return subject
+
+
+def createTextBody(senderName, link):
+    textBody = senderName + " has shared " + link + "\n"
+    textBody = textBody + "Keep Listening! Keep Sharing!"
+    return textBody
+
+
+def createHtmlBody(senderName, link, linkName):
+    htmlBody = "<span><h4>" + senderName + "</h4>"
+    htmlBody += "<p> has shared:</p></span>"
+    htmlBody += "<a href=" + link + ">" + linkName + "</a>"
+    htmlBody += "Keep Listening! Keep Sharing!"
+    return htmlBody
+
+
 def shareLink(request, status, id):
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse('login', args=()))
@@ -51,6 +71,7 @@ def shareLink(request, status, id):
             print(friends)
             userInfo = UserInfo.objects.get(user=user)
 
+            listOfFriendEmails = []
             for friend in friends.friends_id.all():
                 print("sharing with = " + str(friend.user_id) + "link = " + str(musicLink.link))
                 sharedLink, created = SharedMusicLink.objects.get_or_create(
@@ -60,6 +81,21 @@ def shareLink(request, status, id):
                 print("printing shared link" + sharedLink.link_name + " " + str(sharedLink.user_id) + " " + sharedLink.link)
                 if not created:
                     print("link already shared")
+                else:
+                    friendUser = User.objects.get(user_id=friend.user_id)
+                    friendInfo = UserInfo.objects.get(user=friendUser)
+                    listOfFriendEmails.append(friendInfo.email)
+
+            if listOfFriendEmails:
+                print("sending email")
+                senderEmail = userInfo.email
+                subject = createSubject(userInfo.name, sharedLink.link_name)
+                textBody = createTextBody(userInfo.name, sharedLink.link)
+                htmlBody = createHtmlBody(userInfo.name, sharedLink.link, sharedLink.link_name)
+                msg = EmailMultiAlternatives(subject, textBody, senderEmail, listOfFriendEmails)
+                msg.attach_alternative(htmlBody, "text/html")
+                msg.send()
+
         else:
             print("user not found")
         return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status, 'shared': str(musicLink.link_name)}))
