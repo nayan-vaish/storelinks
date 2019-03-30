@@ -67,37 +67,41 @@ def shareLink(request, status, id):
         musicLink = SharedMusicLink.objects.get(pk=id)
         print(musicLink)
         if user:
-            friends = Friends.objects.get(user=user)
-            print(friends)
-            userInfo = UserInfo.objects.get(user=user)
+            try:
+                friends = Friends.objects.get(user=user)
+                print(friends)
+                userInfo = UserInfo.objects.get(user=user)
 
-            listOfFriendEmails = []
-            for friend in friends.friends_id.all():
-                print("sharing with = " + str(friend.user_id) + "link = " + str(musicLink.link))
-                sharedLink, created = SharedMusicLink.objects.get_or_create(
+                listOfFriendEmails = []
+                for friend in friends.friends_id.all():
+                    print("sharing with = " + str(friend.user_id) + "link = " + str(musicLink.link))
+                    sharedLink, created = SharedMusicLink.objects.get_or_create(
                     user_id=friend.user_id, link=musicLink.link,
                     defaults={'link_name': musicLink.link_name, 'artist_name': musicLink.artist_name, 'link_source': musicLink.link_source, 'link_type': musicLink.link_type, 'shared_by': userInfo.name}
-                )
-                print("printing shared link" + sharedLink.link_name + " " + str(sharedLink.user_id) + " " + sharedLink.link)
-                if not created:
-                    print("link already shared")
-                else:
-                    friendUser = User.objects.get(user_id=friend.user_id)
-                    friendInfo = UserInfo.objects.get(user=friendUser)
-                    listOfFriendEmails.append(friendInfo.email)
+                    )
+                    print("printing shared link" + sharedLink.link_name + " " + str(sharedLink.user_id) + " " + sharedLink.link)
+                    if not created:
+                        print("link already shared")
+                    else:
+                        friendUser = User.objects.get(user_id=friend.user_id)
+                        friendInfo = UserInfo.objects.get(user=friendUser)
+                        listOfFriendEmails.append(friendInfo.email)
 
-            if listOfFriendEmails:
-                print("sending email")
-                senderEmail = userInfo.email
-                subject = createSubject(userInfo.name, sharedLink.link_name)
-                textBody = createTextBody(userInfo.name, sharedLink.link)
-                htmlBody = createHtmlBody(userInfo.name, sharedLink.link, sharedLink.link_name)
-                msg = EmailMultiAlternatives(subject, textBody, senderEmail, listOfFriendEmails)
-                msg.attach_alternative(htmlBody, "text/html")
-                msg.send()
+                        if listOfFriendEmails:
+                            print("sending email")
+                            senderEmail = userInfo.email
+                            subject = createSubject(userInfo.name, sharedLink.link_name)
+                            textBody = createTextBody(userInfo.name, sharedLink.link)
+                            htmlBody = createHtmlBody(userInfo.name, sharedLink.link, sharedLink.link_name)
+                            msg = EmailMultiAlternatives(subject, textBody, senderEmail, listOfFriendEmails)
+                            msg.attach_alternative(htmlBody, "text/html")
+                            msg.send()
 
-        else:
-            print("user not found")
+                        else:
+                            print("user not found")
+            except Exception as e:
+                print(e)
+
         return HttpResponseRedirect(reverse('showList', args=(),kwargs={'status': status, 'shared': str(musicLink.link_name)}))
 
 
